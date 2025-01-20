@@ -33,23 +33,23 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+    <div className="p-4 sm:p-6">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Focus Time Card */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Focus Time</h3>
-          <Progress value={metrics?.focusTimePercentage || 0} className="mb-2" />
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Focus Time</h3>
+          <Progress value={metrics?.focusTimePercentage || 0} className="mb-2 h-2.5" />
           <p className="text-sm text-gray-500">
             {Math.round((metrics?.focusTimeSeconds || 0) / 3600)} hours today
           </p>
         </Card>
 
         {/* Productivity Score Card */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Productivity Score</h3>
-          <div className="text-3xl font-bold mb-2">
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Productivity Score</h3>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
             {Math.round(metrics?.productivityScore || 0)}%
           </div>
           <p className="text-sm text-gray-500">
@@ -58,9 +58,9 @@ export function DashboardPage() {
         </Card>
 
         {/* Activity Summary Card */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Activity Summary</h3>
-          <div className="text-3xl font-bold mb-2">
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Activity Summary</h3>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
             {metrics?.totalActivities || 0}
           </div>
           <p className="text-sm text-gray-500">

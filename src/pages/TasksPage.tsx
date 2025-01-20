@@ -86,38 +86,41 @@ export function TasksPage() {
   }, [filters]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <Breadcrumb items={[{ label: 'Tasks' }]} />
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <FilterPanel
             filters={filters}
             onChangeFilters={setFilters}
           />
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/monitoring')}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Monitoring
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowRelationships(!showRelationships)}
-            >
-              <GitGraph className="h-4 w-4 mr-2" />
-              {showRelationships ? 'Hide' : 'Show'} Relationships
-            </Button>
-          </div>
+          {!showRelationships && (
+            <ViewToggle
+              currentView={currentView}
+              onViewChange={setCurrentView}
+            />
+          )}
         </div>
-        {!showRelationships && (
-          <ViewToggle
-            currentView={currentView}
-            onViewChange={setCurrentView}
-          />
-        )}
+        
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => navigate('/monitoring')}
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            Monitoring
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => setShowRelationships(!showRelationships)}
+          >
+            <GitGraph className="h-4 w-4 mr-2" />
+            {showRelationships ? 'Hide' : 'Show'} Relationships
+          </Button>
+        </div>
       </div>
 
       {loading ? (
