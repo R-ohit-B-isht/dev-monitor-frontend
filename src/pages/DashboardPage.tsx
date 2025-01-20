@@ -1,26 +1,52 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Card } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { api } from '../services/api';
+import { ContributionChart } from '../components/ContributionChart';
+import { TrafficChart } from '../components/TrafficChart';
+import { getTrafficStats, TrafficData } from '../services/api';
 
 export function DashboardPage() {
   const [metrics, setMetrics] = useState<any>(null);
+  const [contributions, setContributions] = useState<any>(null);
+  const [trafficData, setTrafficData] = useState<TrafficData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [trafficLoading, setTrafficLoading] = useState(true);
+  const [trafficError, setTrafficError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMetrics = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getMonitoringMetrics();
-        setMetrics(data);
+        const [metricsData, contributionsData] = await Promise.all([
+          api.getMonitoringMetrics(),
+          api.getContributions('current')
+        ]);
+        setMetrics(metricsData);
+        setContributions(contributionsData);
       } catch (error) {
-        console.error('Failed to fetch metrics:', error);
+        console.error('Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMetrics();
+    const fetchTrafficData = async () => {
+      setTrafficLoading(true);
+      setTrafficError(null);
+      try {
+        const data = await getTrafficStats('R-ohit-B-isht/dev-monitor-frontend');
+        setTrafficData(data);
+      } catch (error) {
+        console.error('Failed to fetch traffic data:', error);
+        setTrafficError('Failed to load traffic data');
+      } finally {
+        setTrafficLoading(false);
+      }
+    };
+
+    fetchData();
+    fetchTrafficData();
   }, []);
 
   if (loading) {
@@ -67,6 +93,37 @@ export function DashboardPage() {
             Total activities tracked today
           </p>
         </Card>
+      </div>
+
+      {/* Contribution Chart */}
+      <div className="mt-8">
+        {loading ? (
+          <Card className="p-6">
+            <div className="h-[200px] flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Loading contribution data...</p>
+            </div>
+          </Card>
+        ) : contributions ? (
+          <ContributionChart
+            months={contributions.months}
+            totalContributions={contributions.totalContributions}
+          />
+        ) : (
+          <Card className="p-6">
+            <div className="h-[200px] flex items-center justify-center">
+              <p className="text-sm text-destructive">Failed to load contribution data</p>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Traffic Chart */}
+      <div className="mt-8">
+        <TrafficChart
+          data={trafficData}
+          loading={trafficLoading}
+          error={trafficError}
+        />
       </div>
     </div>
   );
