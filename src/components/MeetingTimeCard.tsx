@@ -51,20 +51,20 @@ export function MeetingTimeCard({ engineerId, sessionId, onDiscardIdleTime }: Me
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4 pb-2">
         <CardTitle className="text-sm font-medium">
           Meeting Time
         </CardTitle>
         <Video className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-4 pt-2">
         <div className="space-y-4">
           <div className="space-y-2">
             <Progress
               value={Math.min(meetingPercentage, 100)}
-              className="h-2"
+              className="h-2.5"
             />
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm gap-1">
               <p className="text-muted-foreground">
                 {metrics?.meetingCount || 0} meetings today
               </p>
@@ -74,9 +74,9 @@ export function MeetingTimeCard({ engineerId, sessionId, onDiscardIdleTime }: Me
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="mr-1 h-4 w-4" />
+              <Clock className="mr-1 h-4 w-4 flex-shrink-0" />
               {meetingPercentage > 75 ? (
                 <span className="text-red-500 font-medium">High meeting load</span>
               ) : (
@@ -86,6 +86,7 @@ export function MeetingTimeCard({ engineerId, sessionId, onDiscardIdleTime }: Me
             <Button
               variant="outline"
               size="sm"
+              className="w-full sm:w-auto whitespace-nowrap"
               onClick={onDiscardIdleTime}
             >
               Discard Idle Time
