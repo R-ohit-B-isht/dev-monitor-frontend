@@ -10,6 +10,7 @@ import { api } from './services/api';
 import { MonitoringDashboard } from './pages/MonitoringDashboard';
 import { MindmapPage } from './pages/MindmapPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { TeamCollaborationPage } from './pages/TeamCollaborationPage';
 import { ScheduleSettingsPage } from './pages/ScheduleSettingsPage';
 import { NotificationsSettingsPage } from './pages/NotificationsSettingsPage';
 import { IntegrationsSettingsPage } from './pages/IntegrationsSettingsPage';
@@ -48,6 +49,20 @@ const Navigation = ({ isDark, onThemeToggle }: { isDark: boolean; onThemeToggle:
         onClick={() => isMobile && setMobileMenuOpen(false)}
       >
         Mindmap
+      </Link>
+      <Link 
+        to="/valuestream" 
+        className="text-sm font-medium hover:text-primary transition-colors"
+        onClick={() => isMobile && setMobileMenuOpen(false)}
+      >
+        Value Stream
+      </Link>
+      <Link 
+        to="/collaboration" 
+        className="text-sm font-medium hover:text-primary transition-colors"
+        onClick={() => isMobile && setMobileMenuOpen(false)}
+      >
+        Team Collaboration
       </Link>
     </>
   );
@@ -252,6 +267,7 @@ function App() {
             <Route path="/settings/notifications" element={<NotificationsSettingsPage />} />
             <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
             <Route path="/settings/display" element={<DisplaySettingsPage />} />
+            <Route path="/collaboration" element={<TeamCollaborationPage />} />
           </Routes>
         </main>
       </div>
