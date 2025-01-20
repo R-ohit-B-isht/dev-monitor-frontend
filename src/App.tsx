@@ -1,8 +1,12 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { TasksPage } from './pages/TasksPage';
 import { TaskDetailsPage } from './pages/TaskDetailsPage';
+import { Button } from './components/ui/button';
+import { Sun, Moon } from 'lucide-react';
+import { api } from './services/api';
 import { MonitoringDashboard } from './pages/MonitoringDashboard';
 import { MindmapPage } from './pages/MindmapPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -11,7 +15,7 @@ import { NotificationsSettingsPage } from './pages/NotificationsSettingsPage';
 import { IntegrationsSettingsPage } from './pages/IntegrationsSettingsPage';
 import { DisplaySettingsPage } from './pages/DisplaySettingsPage';
 
-const Navigation = () => {
+const Navigation = ({ isDark, onThemeToggle }: { isDark: boolean; onThemeToggle: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
 
@@ -104,9 +108,21 @@ const Navigation = () => {
     <>
       <nav className="flex items-center justify-between p-4 bg-background border-b">
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4 flex-1">
           <NavLinks />
           <SettingsLinks />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onThemeToggle}
+            className="ml-auto"
+          >
+            {isDark ? (
+              <Moon className="h-[1.2rem] w-[1.2rem]" />
+            ) : (
+              <Sun className="h-[1.2rem] w-[1.2rem]" />
+            )}
+          </Button>
         </div>
         
         {/* Mobile Navigation Button */}
@@ -131,6 +147,18 @@ const Navigation = () => {
             <div className="flex flex-col gap-4">
               <NavLinks isMobile={true} />
               <SettingsLinks isMobile={true} />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onThemeToggle}
+                className="self-start mt-4"
+              >
+                {isDark ? (
+                  <Moon className="h-[1.2rem] w-[1.2rem]" />
+                ) : (
+                  <Sun className="h-[1.2rem] w-[1.2rem]" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -140,10 +168,77 @@ const Navigation = () => {
 };
 
 function App() {
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+    return savedTheme === 'dark';
+  });
+
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchInitialSettings = async () => {
+      try {
+        const settings = await api.getSettings('current');
+        const theme = settings.display.theme;
+        setIsDark(theme === 'dark');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+      } catch (err) {
+        console.error('Failed to load display settings:', err);
+        // Fall back to localStorage if API fails
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setIsDark(savedTheme === 'dark');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      }
+    };
+
+    fetchInitialSettings();
+  }, []);
+
+  const handleThemeToggle = async () => {
+    const newTheme = isDark ? 'light' : 'dark';
+    try {
+      // Update server first
+      await api.updateDisplay('current', {
+        theme: newTheme,
+        compactView: false, // Preserve existing settings
+        showAchievements: true,
+        defaultView: 'board'
+      });
+      
+      // If server update succeeds, update local state
+      localStorage.setItem('theme', newTheme);
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      setIsDark(!isDark);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to update theme:', err);
+      setError('Failed to update theme. Please try again.');
+    }
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-background">
-        <Navigation />
+        {error && (
+          <div className="bg-destructive/10 text-destructive px-4 py-2 text-sm">
+            {error}
+          </div>
+        )}
+        <Navigation isDark={isDark} onThemeToggle={handleThemeToggle} />
         <main className="container mx-auto px-4 sm:px-6 py-6">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
