@@ -39,10 +39,24 @@ export interface Achievement {
   };
 }
 
-export interface MeetingTimeMetrics {
+export interface MeetingMetrics {
   totalMeetingTime: number;
   meetingCount: number;
   idleTime: number;
+  overlapTime: number;
+  meetings: Array<{
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    duration: number;
+    isRecurring: boolean;
+    recurrencePattern?: string;
+  }>;
+  recurringMeetings: {
+    count: number;
+    patterns: Record<string, number>;
+  };
 }
 
 export interface ScheduleLimits {
@@ -260,7 +274,7 @@ export const api = {
     return response.data;
   },
 
-  getMeetingTime: async (engineerId: string): Promise<MeetingTimeMetrics> => {
+  getMeetingTime: async (engineerId: string): Promise<MeetingMetrics> => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/meeting-time/${engineerId}`);
     return response.data;
   },
