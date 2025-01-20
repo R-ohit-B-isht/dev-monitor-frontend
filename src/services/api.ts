@@ -244,8 +244,11 @@ export const api = {
   },
 
   // Monitoring endpoints
-  getMonitoringMetrics: async (): Promise<MonitoringMetrics> => {
-    const response = await axios.get(`${API_BASE_URL}/monitoring/focus-metrics/current`);
+  getMonitoringMetrics: async (startDate?: Date, endDate?: Date): Promise<MonitoringMetrics> => {
+    const params: Record<string, string> = {};
+    if (startDate) params.start_date = startDate.toISOString();
+    if (endDate) params.end_date = endDate.toISOString();
+    const response = await axios.get(`${API_BASE_URL}/monitoring/focus-metrics/current`, { params });
     return response.data;
   },
 
@@ -281,8 +284,11 @@ export const api = {
     return response.data;
   },
 
-  getContributions: async (engineerId: string): Promise<ContributionData> => {
-    const response = await axios.get(`${API_BASE_URL}/monitoring/contributions/${engineerId}`);
+  getContributions: async (engineerId: string, startDate?: Date, endDate?: Date): Promise<ContributionData> => {
+    const params: Record<string, string> = {};
+    if (startDate) params.start_date = startDate.toISOString();
+    if (endDate) params.end_date = endDate.toISOString();
+    const response = await axios.get(`${API_BASE_URL}/monitoring/contributions/${engineerId}`, { params });
     return response.data;
   },
 
