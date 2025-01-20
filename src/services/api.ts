@@ -80,6 +80,9 @@ export interface ValueStreamMetrics {
   avgCodeToReview: number;
   avgReviewToMerge: number;
   avgMergeToDeploy: number;
+  totalTasks: number;
+  inProgressTasks: number;
+  doneTasks: number;
 }
 
 export interface ValueStreamTask {

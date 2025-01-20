@@ -11,6 +11,7 @@ import { MonitoringDashboard } from './pages/MonitoringDashboard';
 import { MindmapPage } from './pages/MindmapPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TeamCollaborationPage } from './pages/TeamCollaborationPage';
+import { ValueStreamAnalysisPage } from './pages/ValueStreamAnalysisPage';
 import { ScheduleSettingsPage } from './pages/ScheduleSettingsPage';
 import { NotificationsSettingsPage } from './pages/NotificationsSettingsPage';
 import { IntegrationsSettingsPage } from './pages/IntegrationsSettingsPage';
@@ -268,6 +269,7 @@ function App() {
             <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
             <Route path="/settings/display" element={<DisplaySettingsPage />} />
             <Route path="/collaboration" element={<TeamCollaborationPage />} />
+            <Route path="/valuestream" element={<ValueStreamAnalysisPage />} />
           </Routes>
         </main>
       </div>
