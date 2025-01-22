@@ -24,6 +24,8 @@ export function DisplayPanel({ engineerId = 'current' }: DisplayPanelProps) {
     // Apply theme class immediately on mount
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
     return {
       theme: savedTheme as 'light' | 'dark',

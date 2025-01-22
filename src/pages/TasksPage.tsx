@@ -30,94 +30,105 @@ export function TasksPage() {
     navigate(`/tasks/${task._id}`);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const filterParams: Record<string, string> = {};
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== '') {
-            if (key === 'excludeMeetings') {
-              filterParams[key] = value ? 'true' : 'false';
-            } else {
-              filterParams[key] = value.toString();
-            }
-          }
-        });
 
-        try {
-          const [tasksData, relationshipsData] = await Promise.all([
-            api.getTasks(filterParams),
-            api.getRelationships()
-          ]);
-          console.log('API Response - Tasks:', tasksData); // Debug log
-          console.log('API Response - Relationships:', relationshipsData); // Debug log
-          
-          if (Array.isArray(tasksData)) {
-            setTasks(tasksData);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filterParams: Record<string, string> = {};
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          if (key === 'excludeMeetings') {
+            filterParams[key] = value ? 'true' : 'false';
           } else {
-            console.error('Tasks data is not an array:', tasksData);
-            setError('Invalid tasks data format');
-            setTasks([]);
+            filterParams[key] = value.toString();
           }
-          
-          if (Array.isArray(relationshipsData)) {
-            setRelationships(relationshipsData);
-          } else {
-            console.error('Relationships data is not an array:', relationshipsData);
-            setRelationships([]);
-          }
-        } catch (err) {
-          console.error('Error fetching data:', err);
-          setError('Failed to load data');
+        }
+      });
+
+      try {
+        const [tasksData, relationshipsData] = await Promise.all([
+          api.getTasks(filterParams),
+          api.getRelationships()
+        ]);
+        console.log('API Response - Tasks:', tasksData); // Debug log
+        console.log('API Response - Relationships:', relationshipsData); // Debug log
+
+        if (Array.isArray(tasksData)) {
+          setTasks(tasksData);
+        } else {
+          console.error('Tasks data is not an array:', tasksData);
+          setError('Invalid tasks data format');
           setTasks([]);
+        }
+
+        if (Array.isArray(relationshipsData)) {
+          setRelationships(relationshipsData);
+        } else {
+          console.error('Relationships data is not an array:', relationshipsData);
           setRelationships([]);
         }
       } catch (err) {
+        console.error('Error fetching data:', err);
         setError('Failed to load data');
-        console.error(err);
-      } finally {
-        setLoading(false);
+        setTasks([]);
+        setRelationships([]);
       }
+    } catch (err) {
+      setError('Failed to load data');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    const handleTaskCreated = () => {
+      fetchData();
     };
 
+    window.addEventListener('taskCreated', handleTaskCreated);
     fetchData();
+
+    return () => window.removeEventListener('taskCreated', handleTaskCreated);
   }, [filters]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <Breadcrumb items={[{ label: 'Tasks' }]} />
-      
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-4">
+
+      <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <FilterPanel
             filters={filters}
             onChangeFilters={setFilters}
           />
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/monitoring')}
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Monitoring
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowRelationships(!showRelationships)}
-            >
-              <GitGraph className="h-4 w-4 mr-2" />
-              {showRelationships ? 'Hide' : 'Show'} Relationships
-            </Button>
-          </div>
+          {!showRelationships && (
+            <ViewToggle
+              currentView={currentView}
+              onViewChange={setCurrentView}
+            />
+          )}
         </div>
-        {!showRelationships && (
-          <ViewToggle
-            currentView={currentView}
-            onViewChange={setCurrentView}
-          />
-        )}
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => navigate('/monitoring')}
+          >
+            <Activity className="h-4 w-4 mr-2" />
+            Monitoring
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => setShowRelationships(!showRelationships)}
+          >
+            <GitGraph className="h-4 w-4 mr-2" />
+            {showRelationships ? 'Hide' : 'Show'} Relationships
+          </Button>
+        </div>
       </div>
 
       {loading ? (

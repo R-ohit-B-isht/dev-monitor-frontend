@@ -4,7 +4,6 @@ import ReactFlow, {
   Edge,
   Background,
   Controls,
-  MiniMap,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Task } from '../../types/Task';
@@ -69,7 +68,6 @@ export function RelationshipGraph({ tasks, relationships, onTaskClick }: Relatio
       >
         <Background />
         <Controls />
-        <MiniMap />
       </ReactFlow>
     </div>
   );

@@ -7,7 +7,6 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   Panel,
-  MiniMap,
   useReactFlow,
   ConnectionMode,
   ReactFlowProvider,
@@ -144,7 +143,6 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
       >
         <Background />
         <Controls />
-        <MiniMap />
       </ReactFlow>
     );
   };

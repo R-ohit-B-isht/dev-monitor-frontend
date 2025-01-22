@@ -13,6 +13,21 @@ export interface MonitoringMetrics {
   newBadges: string[];
 }
 
+export interface ContributionData {
+  months: {
+    year: number;
+    month: number;
+    name: string;
+    days: number;
+    contributions: {
+      date: string;
+      count: number;
+      intensity: number;
+    }[];
+  }[];
+  totalContributions: number;
+}
+
 export interface Achievement {
   badge: string;
   earnedAt: string;
@@ -24,10 +39,24 @@ export interface Achievement {
   };
 }
 
-export interface MeetingTimeMetrics {
+export interface MeetingMetrics {
   totalMeetingTime: number;
   meetingCount: number;
   idleTime: number;
+  overlapTime: number;
+  meetings: Array<{
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    duration: number;
+    isRecurring: boolean;
+    recurrencePattern?: string;
+  }>;
+  recurringMeetings: {
+    count: number;
+    patterns: Record<string, number>;
+  };
 }
 
 export interface ScheduleLimits {
@@ -60,6 +89,26 @@ export interface DisplaySettings {
   updatedAt?: string;
 }
 
+export interface ValueStreamMetrics {
+  avgIdeaToCode: number;
+  avgCodeToReview: number;
+  avgReviewToMerge: number;
+  avgMergeToDeploy: number;
+  totalTasks: number;
+  inProgressTasks: number;
+  doneTasks: number;
+}
+
+export interface ValueStreamTask {
+  _id: string;
+  title: string;
+  status: string;
+  ideaToCode: number;
+  codeToReview: number;
+  reviewToMerge: number;
+  mergeToDeploy: number;
+}
+
 export interface Settings {
   engineerId: string;
   notifications: NotificationSettings;
@@ -69,7 +118,80 @@ export interface Settings {
   updatedAt: string;
 }
 
+export interface SecurityAlert {
+  _id: string;
+  repository: string;
+  alert_number: number;
+  state: 'open' | 'fixed' | 'dismissed';
+  severity: 'high' | 'medium' | 'low';
+  description: string;
+  location?: {
+    path: string;
+    start_line: number;
+    end_line: number;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SecurityStats {
+  total: number;
+  open: number;
+  fixed: number;
+  dismissed: number;
+  high_severity: number;
+  medium_severity: number;
+  low_severity: number;
+}
+
+
+
+// Collaboration endpoints
+const getActivityFeed = async (params?: {
+  engineerId?: string;
+  repository?: string;
+  eventType?: string;
+  days?: number;
+}): Promise<{ activities: Activity[]; total: number }> => {
+  const response = await axios.get(`${API_BASE_URL}/collab/activity`, { params });
+  return response.data;
+};
+
+const getCollaborationStats = async (params?: {
+  repository?: string;
+  days?: number;
+}): Promise<CollaborationStats> => {
+  const response = await axios.get(`${API_BASE_URL}/collab/stats`, { params });
+  return response.data;
+};
+
 export const api = {
+  // Organization endpoints
+  getOrganizationMetrics: async (days: number = 30): Promise<OrganizationMetrics> => {
+    const response = await axios.get(`${API_BASE_URL}/org/aggregations`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  // Collaboration endpoints
+  getActivityFeed,
+  getCollaborationStats,
+  // Value Stream Analytics endpoints
+  getValueStreamMetrics: async (engineerId: string, params?: { days?: number }): Promise<{ metrics: ValueStreamMetrics; tasks: ValueStreamTask[] }> => {
+    const response = await axios.get(`${API_BASE_URL}/value-stream/metrics/${engineerId}`, { params });
+    return response.data;
+  },
+
+  recordValueStreamEvent: async (engineerId: string, data: {
+    taskId: string;
+    eventType: 'code_started' | 'code_completed' | 'review_started' | 'review_completed' | 'merged' | 'deployed';
+    metadata?: Record<string, any>;
+    sessionId?: string;
+  }): Promise<{ eventId: string }> => {
+    const response = await axios.post(`${API_BASE_URL}/value-stream/events/${engineerId}`, data);
+    return response.data;
+  },
   // Schedule endpoints
   getScheduleLimits: async (engineerId: string): Promise<ScheduleLimits> => {
     try {
@@ -147,8 +269,11 @@ export const api = {
   },
 
   // Monitoring endpoints
-  getMonitoringMetrics: async (): Promise<MonitoringMetrics> => {
-    const response = await axios.get(`${API_BASE_URL}/monitoring/focus-metrics/current`);
+  getMonitoringMetrics: async (startDate?: Date, endDate?: Date): Promise<MonitoringMetrics> => {
+    const params: Record<string, string> = {};
+    if (startDate) params.start_date = startDate.toISOString();
+    if (endDate) params.end_date = endDate.toISOString();
+    const response = await axios.get(`${API_BASE_URL}/monitoring/focus-metrics/current`, { params });
     return response.data;
   },
 
@@ -157,7 +282,7 @@ export const api = {
     return response.data;
   },
 
-  getMeetingTime: async (engineerId: string): Promise<MeetingTimeMetrics> => {
+  getMeetingTime: async (engineerId: string): Promise<MeetingMetrics> => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/meeting-time/${engineerId}`);
     return response.data;
   },
@@ -181,6 +306,14 @@ export const api = {
 
   getReportSummary: async () => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/report/summary`);
+    return response.data;
+  },
+
+  getContributions: async (engineerId: string, startDate?: Date, endDate?: Date): Promise<ContributionData> => {
+    const params: Record<string, string> = {};
+    if (startDate) params.start_date = startDate.toISOString();
+    if (endDate) params.end_date = endDate.toISOString();
+    const response = await axios.get(`${API_BASE_URL}/monitoring/contributions/${engineerId}`, { params });
     return response.data;
   },
 
@@ -226,6 +359,11 @@ export const api = {
 
   deleteRelationship: async (relationshipId: string): Promise<void> => {
     await axios.delete(`${API_BASE_URL}/relationships/${relationshipId}`);
+  },
+
+  createTask: async (taskData: Partial<Task>): Promise<{ _id: string }> => {
+    const response = await axios.post(`${API_BASE_URL}/tasks/create`, taskData);
+    return response.data;
   },
   updateTaskStatus: async (taskId: string, status: Task['status']): Promise<void> => {
     await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { status });
@@ -285,4 +423,119 @@ export interface MindMapEdge {
   targetId: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// Security endpoints
+export const getSecurityAlerts = async (params?: { repository?: string; state?: string; severity?: string }): Promise<{ alerts: SecurityAlert[] }> => {
+  const response = await axios.get(`${API_BASE_URL}/security/alerts`, { params });
+  return response.data;
+};
+
+export const getSecurityStats = async (params?: { repository?: string }): Promise<SecurityStats> => {
+  const response = await axios.get(`${API_BASE_URL}/security/alerts/stats`, { params });
+  return response.data;
+};
+
+export const syncSecurityAlerts = async (repository: string): Promise<{ message: string; count: number }> => {
+  const response = await axios.post(`${API_BASE_URL}/security/alerts/sync`, { repository });
+  return response.data;
+};
+
+export interface TrafficData {
+  repository: string;
+  views: number;
+  unique_views: number;
+  clones: number;
+  unique_clones: number;
+  views_history: Array<{
+    timestamp: string;
+    count: number;
+    uniques: number;
+  }>;
+  clones_history: Array<{
+    timestamp: string;
+    count: number;
+    uniques: number;
+  }>;
+  updated_at: string;
+}
+
+// Traffic endpoints
+export const getRepositoryViews = async (repository: string): Promise<any> => {
+  const response = await axios.get(`${API_BASE_URL}/git/traffic/views/${repository}`);
+  return response.data;
+};
+
+export const getRepositoryClones = async (repository: string): Promise<any> => {
+  const response = await axios.get(`${API_BASE_URL}/git/traffic/clones/${repository}`);
+  return response.data;
+};
+
+export const getTrafficStats = async (repository: string): Promise<TrafficData> => {
+  const response = await axios.get(`${API_BASE_URL}/git/traffic/stats/${repository}`);
+  return response.data;
+};
+
+export interface Activity {
+  _id: string;
+  engineerId: string;
+  eventType: string;
+  repository: string;
+  timestamp: string;
+  title?: string;
+  description?: string;
+  url?: string;
+  reviewers?: string[];
+  commentCount?: number;
+  additions?: number;
+  deletions?: number;
+}
+
+export interface CollaborationStats {
+  total_reviews: number;
+  total_comments: number;
+  total_additions: number;
+  total_deletions: number;
+  reviewer_count: number;
+  unique_reviewers: string[];
+  event_types: string[];
+}
+
+export interface OrganizationMetrics {
+  metrics: Array<{
+    repository: string;
+    activity: {
+      commits: number;
+      pull_requests: number;
+      reviews: number;
+      comments: number;
+    };
+    performance: {
+      avg_review_time: number;
+      merge_success_rate: number;
+      deployment_frequency: number;
+    };
+    security: {
+      open_alerts: number;
+      fixed_alerts: number;
+      high_severity: number;
+    };
+    collaboration: {
+      unique_contributors: number;
+      review_coverage: number;
+      comment_ratio: number;
+    };
+  }>;
+  totals: {
+    total_repositories: number;
+    total_activity: number;
+    total_contributors: number;
+    total_security_alerts: number;
+    avg_deployment_frequency: number;
+    timeframe: {
+      start: string;
+      end: string;
+      days: number;
+    };
+  };
 }
