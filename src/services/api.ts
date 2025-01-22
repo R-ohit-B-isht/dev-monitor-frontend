@@ -166,6 +166,14 @@ const getCollaborationStats = async (params?: {
 };
 
 export const api = {
+  // Organization endpoints
+  getOrganizationMetrics: async (days: number = 30): Promise<OrganizationMetrics> => {
+    const response = await axios.get(`${API_BASE_URL}/org/aggregations`, {
+      params: { days }
+    });
+    return response.data;
+  },
+
   // Collaboration endpoints
   getActivityFeed,
   getCollaborationStats,
@@ -352,6 +360,11 @@ export const api = {
   deleteRelationship: async (relationshipId: string): Promise<void> => {
     await axios.delete(`${API_BASE_URL}/relationships/${relationshipId}`);
   },
+
+  createTask: async (taskData: Partial<Task>): Promise<{ _id: string }> => {
+    const response = await axios.post(`${API_BASE_URL}/tasks/create`, taskData);
+    return response.data;
+  },
   updateTaskStatus: async (taskId: string, status: Task['status']): Promise<void> => {
     await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { status });
   },
@@ -486,4 +499,43 @@ export interface CollaborationStats {
   reviewer_count: number;
   unique_reviewers: string[];
   event_types: string[];
+}
+
+export interface OrganizationMetrics {
+  metrics: Array<{
+    repository: string;
+    activity: {
+      commits: number;
+      pull_requests: number;
+      reviews: number;
+      comments: number;
+    };
+    performance: {
+      avg_review_time: number;
+      merge_success_rate: number;
+      deployment_frequency: number;
+    };
+    security: {
+      open_alerts: number;
+      fixed_alerts: number;
+      high_severity: number;
+    };
+    collaboration: {
+      unique_contributors: number;
+      review_coverage: number;
+      comment_ratio: number;
+    };
+  }>;
+  totals: {
+    total_repositories: number;
+    total_activity: number;
+    total_contributors: number;
+    total_security_alerts: number;
+    avg_deployment_frequency: number;
+    timeframe: {
+      start: string;
+      end: string;
+      days: number;
+    };
+  };
 }

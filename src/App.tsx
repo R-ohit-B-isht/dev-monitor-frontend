@@ -12,6 +12,7 @@ import { MindmapPage } from './pages/MindmapPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TeamCollaborationPage } from './pages/TeamCollaborationPage';
 import { ValueStreamAnalysisPage } from './pages/ValueStreamAnalysisPage';
+import { OrganizationDashboard } from './pages/OrganizationDashboard';
 import { ScheduleSettingsPage } from './pages/ScheduleSettingsPage';
 import { NotificationsSettingsPage } from './pages/NotificationsSettingsPage';
 import { IntegrationsSettingsPage } from './pages/IntegrationsSettingsPage';
@@ -57,6 +58,13 @@ const Navigation = ({ isDark, onThemeToggle }: { isDark: boolean; onThemeToggle:
         onClick={() => isMobile && setMobileMenuOpen(false)}
       >
         Value Stream
+      </Link>
+      <Link 
+        to="/organization" 
+        className="text-sm font-medium hover:text-primary transition-colors"
+        onClick={() => isMobile && setMobileMenuOpen(false)}
+      >
+        Organization
       </Link>
       <Link 
         to="/collaboration" 
@@ -270,6 +278,7 @@ function App() {
             <Route path="/settings/display" element={<DisplaySettingsPage />} />
             <Route path="/collaboration" element={<TeamCollaborationPage />} />
             <Route path="/valuestream" element={<ValueStreamAnalysisPage />} />
+            <Route path="/organization" element={<OrganizationDashboard />} />
           </Routes>
         </main>
       </div>
