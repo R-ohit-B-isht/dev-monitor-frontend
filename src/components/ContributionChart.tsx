@@ -32,7 +32,8 @@ const intensityColors: Record<number, string> = {
   1: 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800/40',
   2: 'bg-emerald-200 dark:bg-emerald-800/40 group-hover:bg-emerald-300 dark:group-hover:bg-emerald-700/50',
   3: 'bg-emerald-300 dark:bg-emerald-700/50 group-hover:bg-emerald-400 dark:group-hover:bg-emerald-600/60',
-  4: 'bg-emerald-400 dark:bg-emerald-600/60 group-hover:bg-emerald-500 dark:group-hover:bg-emerald-500/70'
+  4: 'bg-emerald-400 dark:bg-emerald-600/60 group-hover:bg-emerald-500 dark:group-hover:bg-emerald-500/70',
+  5: 'bg-emerald-500 dark:bg-emerald-500/70 group-hover:bg-emerald-600 dark:group-hover:bg-emerald-400/80'
 } as const;
 
 export function ContributionChart({ months, totalContributions }: ContributionChartProps) {

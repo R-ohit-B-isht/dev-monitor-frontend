@@ -6,10 +6,11 @@ interface TaskColumnProps {
   title: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
   createButton?: React.ReactNode;
 }
 
-export function TaskColumn({ title, tasks, onTaskClick, createButton }: TaskColumnProps) {
+export function TaskColumn({ title, tasks, onTaskClick, onDelete, createButton }: TaskColumnProps) {
   return (
     <div className="flex-1 flex-col min-w-[280px] sm:min-w-[300px] bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-border shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -27,6 +28,7 @@ export function TaskColumn({ title, tasks, onTaskClick, createButton }: TaskColu
             key={task._id}
             task={task}
             onClick={() => onTaskClick(task)}
+            onDelete={onDelete}
           />
         ))}
         {tasks.length === 0 && (

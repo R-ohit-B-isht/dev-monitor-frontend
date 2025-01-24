@@ -5,6 +5,7 @@ import { TaskCard } from '../TaskCard';
 interface ListViewProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+
 }
 
 export function ListView({ tasks, onTaskClick }: ListViewProps) {
@@ -15,6 +16,7 @@ export function ListView({ tasks, onTaskClick }: ListViewProps) {
           key={task._id}
           task={task}
           onClick={() => onTaskClick(task)}
+
         />
       ))}
       {tasks.length === 0 && (

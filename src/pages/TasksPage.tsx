@@ -32,30 +32,32 @@ export function TasksPage() {
 
 
 
+
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('Fetching data with filters:', filters);
       const filterParams: Record<string, string> = {};
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
-          if (key === 'excludeMeetings') {
-            filterParams[key] = value ? 'true' : 'false';
-          } else {
-            filterParams[key] = value.toString();
-          }
+          filterParams[key] = value.toString();
         }
       });
+      console.log('Final filter params:', filterParams);
 
       try {
         const [tasksData, relationshipsData] = await Promise.all([
           api.getTasks(filterParams),
           api.getRelationships()
         ]);
-        console.log('API Response - Tasks:', tasksData); // Debug log
-        console.log('API Response - Relationships:', relationshipsData); // Debug log
+        console.log('API Response - Tasks:', tasksData);
+        console.log('Task statuses:', tasksData.map(t => ({ id: t._id, status: t.status })));
+        console.log('API Response - Relationships:', relationshipsData);
 
         if (Array.isArray(tasksData)) {
+          console.log('Setting tasks state with', tasksData.length, 'tasks');
           setTasks(tasksData);
         } else {
           console.error('Tasks data is not an array:', tasksData);

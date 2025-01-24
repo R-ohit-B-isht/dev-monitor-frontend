@@ -5,16 +5,11 @@ import { Progress } from '../components/ui/progress';
 import { api } from '../services/api';
 import { DateRangeFilter } from '../components/DateRangeFilter';
 import { ContributionChart } from '../components/ContributionChart';
-import { TrafficChart } from '../components/TrafficChart';
-import { getTrafficStats, TrafficData } from '../services/api';
 
 export function DashboardPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [contributions, setContributions] = useState<any>(null);
-  const [trafficData, setTrafficData] = useState<TrafficData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [trafficLoading, setTrafficLoading] = useState(true);
-  const [trafficError, setTrafficError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 30);
@@ -38,22 +33,7 @@ export function DashboardPage() {
       }
     };
 
-    const fetchTrafficData = async () => {
-      setTrafficLoading(true);
-      setTrafficError(null);
-      try {
-        const data = await getTrafficStats('R-ohit-B-isht/dev-monitor-frontend');
-        setTrafficData(data);
-      } catch (error) {
-        console.error('Failed to fetch traffic data:', error);
-        setTrafficError('Failed to load traffic data');
-      } finally {
-        setTrafficLoading(false);
-      }
-    };
-
     fetchData();
-    fetchTrafficData();
   }, [startDate, endDate]);
 
   if (loading) {
@@ -77,7 +57,7 @@ export function DashboardPage() {
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Focus Time Card */}
         <Card className="p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold mb-2">Focus Time</h3>
@@ -108,6 +88,54 @@ export function DashboardPage() {
             Total activities tracked today
           </p>
         </Card>
+
+        {/* Code Changes Card */}
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Code Changes</h3>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
+            {metrics?.aiMetrics?.linesOfCodeModified || 0}
+          </div>
+          <p className="text-sm text-gray-500">
+            Lines modified today
+          </p>
+        </Card>
+      </div>
+
+      {/* AI Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-6">
+        {/* Files Changed Card */}
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Files Changed</h3>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
+            {metrics?.aiMetrics?.filesChanged || 0}
+          </div>
+          <p className="text-sm text-gray-500">
+            Total files modified
+          </p>
+        </Card>
+
+        {/* Test Coverage Card */}
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Test Coverage</h3>
+          <Progress 
+            value={metrics?.aiMetrics?.testCoverage || 0} 
+            className="mb-2 h-2.5"
+          />
+          <p className="text-sm text-gray-500">
+            {Math.round(metrics?.aiMetrics?.testCoverage || 0)}% coverage
+          </p>
+        </Card>
+
+        {/* Response Time Card */}
+        <Card className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Response Time</h3>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
+            {Math.round(metrics?.aiMetrics?.responseTime || 0)}ms
+          </div>
+          <p className="text-sm text-gray-500">
+            Average response time
+          </p>
+        </Card>
       </div>
 
       {/* Contribution Chart */}
@@ -132,14 +160,6 @@ export function DashboardPage() {
         )}
       </div>
 
-      {/* Traffic Chart */}
-      <div className="mt-8">
-        <TrafficChart
-          data={trafficData}
-          loading={trafficLoading}
-          error={trafficError}
-        />
-      </div>
     </div>
   );
 }

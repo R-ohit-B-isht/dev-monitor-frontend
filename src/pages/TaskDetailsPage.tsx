@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Skeleton } from '../components/views/Skeleton';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ArrowLeft, ArrowRight, Clock, Github, Trello, LineChart, XCircle } from 'lucide-react';
@@ -150,7 +151,20 @@ export function TaskDetailsPage() {
           Back
         </Button>
         <div className="h-4 w-px bg-border" />
-
+        <Button
+          variant="destructive"
+          onClick={async () => {
+            try {
+              await api.deleteTask(id!);
+              navigate('/tasks');
+            } catch (error) {
+              console.error('Error deleting task:', error);
+              setError('Failed to delete task');
+            }
+          }}
+        >
+          Delete Task
+        </Button>
       </div>
       <Card className="transition-all duration-200 hover:shadow-lg">
         <CardHeader className="space-y-2">
@@ -159,15 +173,38 @@ export function TaskDetailsPage() {
             {integrationIcons[task.integration]}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="secondary"
-              className={cn(
-                "transition-colors",
-                statusStyles[task.status]
-              )}
-            >
-              {task.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "transition-colors",
+                  statusStyles[task.status]
+                )}
+              >
+                {task.status}
+              </Badge>
+              <Select
+                value={task.status}
+                onValueChange={async (newStatus) => {
+                  try {
+                    await api.updateTaskStatus(task._id, newStatus as Task['status']);
+                    setTask({ ...task, status: newStatus as Task['status'] });
+                  } catch (error) {
+                    console.error('Error updating task status:', error);
+                    setError('Failed to update task status');
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Change status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="To-Do">To-Do</SelectItem>
+                  <SelectItem value="In-Progress">In Progress</SelectItem>
+                  <SelectItem value="Done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {task.priority && (
               <Badge variant="outline">Priority: {task.priority}</Badge>
             )}

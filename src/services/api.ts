@@ -11,6 +11,12 @@ export interface MonitoringMetrics {
   focusActivityRatio: number;
   productivityScore: number;
   newBadges: string[];
+  aiMetrics: {
+    linesOfCodeModified: number;
+    filesChanged: number;
+    testCoverage: number;
+    responseTime: number;
+  };
 }
 
 export interface ContributionData {
@@ -39,25 +45,7 @@ export interface Achievement {
   };
 }
 
-export interface MeetingMetrics {
-  totalMeetingTime: number;
-  meetingCount: number;
-  idleTime: number;
-  overlapTime: number;
-  meetings: Array<{
-    id: string;
-    title: string;
-    start: string;
-    end: string;
-    duration: number;
-    isRecurring: boolean;
-    recurrencePattern?: string;
-  }>;
-  recurringMeetings: {
-    count: number;
-    patterns: Record<string, number>;
-  };
-}
+
 
 export interface ScheduleLimits {
   engineerId: string;
@@ -174,6 +162,22 @@ export const api = {
     return response.data;
   },
 
+  // Security endpoints
+  getSecurityAlerts: async (params?: { repository?: string; state?: string; severity?: string }): Promise<{ alerts: SecurityAlert[] }> => {
+    const response = await axios.get(`${API_BASE_URL}/security/alerts`, { params });
+    return response.data;
+  },
+
+  getSecurityStats: async (params?: { repository?: string }): Promise<SecurityStats> => {
+    const response = await axios.get(`${API_BASE_URL}/security/alerts/stats`, { params });
+    return response.data;
+  },
+
+  syncSecurityAlerts: async (repository: string): Promise<{ message: string; count: number }> => {
+    const response = await axios.post(`${API_BASE_URL}/security/alerts/sync`, { repository });
+    return response.data;
+  },
+
   // Collaboration endpoints
   getActivityFeed,
   getCollaborationStats,
@@ -282,14 +286,9 @@ export const api = {
     return response.data;
   },
 
-  getMeetingTime: async (engineerId: string): Promise<MeetingMetrics> => {
-    const response = await axios.get(`${API_BASE_URL}/monitoring/meeting-time/${engineerId}`);
-    return response.data;
-  },
 
-  discardIdleTime: async (sessionId: string): Promise<void> => {
-    await axios.post(`${API_BASE_URL}/monitoring/discard-idle`, { sessionId });
-  },
+
+
 
   generateReport: async (params: {
     startDate?: string;
@@ -298,7 +297,6 @@ export const api = {
     format: 'json' | 'csv';
     engineerId: string;
     includeAchievements: boolean;
-    includeMeetings: boolean;
   }): Promise<any> => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/report`, { params });
     return response.data;
@@ -310,17 +308,39 @@ export const api = {
   },
 
   getContributions: async (engineerId: string, startDate?: Date, endDate?: Date): Promise<ContributionData> => {
-    const params: Record<string, string> = {};
-    if (startDate) params.start_date = startDate.toISOString();
-    if (endDate) params.end_date = endDate.toISOString();
-    const response = await axios.get(`${API_BASE_URL}/monitoring/contributions/${engineerId}`, { params });
-    return response.data;
+    try {
+      const params: Record<string, string> = {};
+      if (startDate) params.start_date = startDate.toISOString();
+      if (endDate) params.end_date = endDate.toISOString();
+      
+      // Ensure we're using the correct port
+      const response = await axios.get(`${API_BASE_URL}/monitoring/contributions/${engineerId}`, { 
+        params,
+        // Add error handling for development
+        validateStatus: (status) => status === 200
+      });
+      
+      // Validate response format
+      if (!response.data.months || !Array.isArray(response.data.months)) {
+        throw new Error('Invalid contribution data format');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch contribution data:', error);
+      throw error;
+    }
   },
 
   // Task endpoints
   getTasks: async (filters?: Record<string, string>): Promise<Task[]> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tasks`, { params: filters });
+      // Ensure we don't show deleted tasks by default
+      const params = {
+        ...filters,
+        showDeleted: 'false'
+      };
+      const response = await axios.get(`${API_BASE_URL}/tasks`, { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -367,6 +387,10 @@ export const api = {
   },
   updateTaskStatus: async (taskId: string, status: Task['status']): Promise<void> => {
     await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { status });
+  },
+
+  deleteTask: async (taskId: string): Promise<void> => {
+    await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { delete: true });
   },
 
 // Mind Map endpoints
@@ -441,40 +465,7 @@ export const syncSecurityAlerts = async (repository: string): Promise<{ message:
   return response.data;
 };
 
-export interface TrafficData {
-  repository: string;
-  views: number;
-  unique_views: number;
-  clones: number;
-  unique_clones: number;
-  views_history: Array<{
-    timestamp: string;
-    count: number;
-    uniques: number;
-  }>;
-  clones_history: Array<{
-    timestamp: string;
-    count: number;
-    uniques: number;
-  }>;
-  updated_at: string;
-}
 
-// Traffic endpoints
-export const getRepositoryViews = async (repository: string): Promise<any> => {
-  const response = await axios.get(`${API_BASE_URL}/git/traffic/views/${repository}`);
-  return response.data;
-};
-
-export const getRepositoryClones = async (repository: string): Promise<any> => {
-  const response = await axios.get(`${API_BASE_URL}/git/traffic/clones/${repository}`);
-  return response.data;
-};
-
-export const getTrafficStats = async (repository: string): Promise<TrafficData> => {
-  const response = await axios.get(`${API_BASE_URL}/git/traffic/stats/${repository}`);
-  return response.data;
-};
 
 export interface Activity {
   _id: string;
