@@ -78,7 +78,7 @@ export function SecurityDashboard() {
     fetchData();
   }, []);
 
-  const [repository, setRepository] = useState<string>('');
+  const [repository, setRepository] = useState<string>('R-ohit-B-isht/cal.com');
   
   const handleSync = async () => {
     if (!repository) {

@@ -36,7 +36,8 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
   const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [fileFormat, setFileFormat] = useState<'json' | 'csv'>('csv');
   const [includeAchievements, setIncludeAchievements] = useState(true);
-  const [includeMeetings, setIncludeMeetings] = useState(true);
+  // Removed meeting state for AI agent
+
   const [availableMetrics, setAvailableMetrics] = useState<Array<{
     id: string;
     name: string;
@@ -64,8 +65,7 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
         type: reportType,
         format: fileFormat,
         engineerId,
-        includeAchievements,
-        includeMeetings
+        includeAchievements
       });
 
       if (fileFormat === 'csv') {
@@ -182,16 +182,7 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
                   Achievements
                 </label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="meetings"
-                  checked={includeMeetings}
-                  onCheckedChange={(checked: CheckedState) => setIncludeMeetings(!!checked)}
-                />
-                <label htmlFor="meetings" className="text-sm">
-                  Meeting Data
-                </label>
-              </div>
+              {/* Removed meeting checkbox for AI agent */}
             </div>
           </div>
 

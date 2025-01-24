@@ -9,9 +9,10 @@ import { TaskCreateDialog } from '../TaskCreateDialog';
 interface BoardViewProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
-export function BoardView({ tasks, onTaskClick }: BoardViewProps) {
+export function BoardView({ tasks, onTaskClick, onDelete }: BoardViewProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const filterTasksByStatus = (status: Task['status']) => {
     return tasks.filter(task => task.status === status);

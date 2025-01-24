@@ -24,7 +24,7 @@ export interface Filters {
   integration?: string;
   priority?: string;
   search?: string;
-  excludeMeetings?: boolean;
+
 }
 
 interface FilterPanelProps {
@@ -126,25 +126,7 @@ export function FilterPanel({ filters, onChangeFilters }: FilterPanelProps) {
             />
           </div>
 
-          {/* Exclude Meetings */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="excludeMeetings"
-              checked={localFilters.excludeMeetings}
-              onCheckedChange={(checked) =>
-                setLocalFilters({
-                  ...localFilters,
-                  excludeMeetings: checked as boolean,
-                })
-              }
-            />
-            <label
-              htmlFor="excludeMeetings"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Exclude meeting tasks
-            </label>
-          </div>
+
         </div>
 
         <div className="flex justify-end gap-3">

@@ -13,7 +13,7 @@ import { Button } from '../components/ui/button';
 import { Clock, Award, Activity, Brain, FileDown } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { api, MonitoringMetrics, Achievement } from '../services/api';
-import { MeetingTimeCard } from '../components/MeetingTimeCard';
+// Removed meeting card import for AI agent
 import { ReportPanel } from '../components/ReportPanel';
 
 export function MonitoringDashboard() {
@@ -72,22 +72,32 @@ export function MonitoringDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        {/* Meeting Time */}
-        <MeetingTimeCard
-          engineerId="current"
-          sessionId={currentSessionId}
-          onDiscardIdleTime={async () => {
-            if (!currentSessionId) return;
-            try {
-              await api.discardIdleTime(currentSessionId);
-              // Refresh metrics
-              fetchData();
-            } catch (error) {
-              console.error('Failed to discard idle time:', error);
-              setError('Failed to discard idle time');
-            }
-          }}
-        />
+        {/* AI Performance Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4 pb-2">
+            <CardTitle className="text-sm font-medium">
+              AI Performance
+            </CardTitle>
+            <Brain className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4 pt-2">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Response Time</span>
+                <span>{Math.round(metrics?.aiMetrics?.responseTime || 0)}ms</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Test Coverage</span>
+                <span>{Math.round(metrics?.aiMetrics?.testCoverage || 0)}%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Files Changed</span>
+                <span>{metrics?.aiMetrics?.filesChanged || 0}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
 
         {/* Productivity Score */}
         <Card>

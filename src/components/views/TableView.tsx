@@ -24,6 +24,7 @@ const integrationIcons = {
 interface TableViewProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+
 }
 
 type SortField = 'title' | 'status' | 'priority' | 'updatedAt' | 'integration';
@@ -80,6 +81,7 @@ export function TableView({ tasks, onTaskClick }: TableViewProps) {
               <TableHead className="hidden md:table-cell">{renderSortButton('integration', 'Integration')}</TableHead>
               <TableHead className="hidden lg:table-cell">Created</TableHead>
               <TableHead className="min-w-[100px]">{renderSortButton('updatedAt', 'Updated')}</TableHead>
+
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -125,6 +127,7 @@ export function TableView({ tasks, onTaskClick }: TableViewProps) {
                 <TableCell className="min-w-[100px] whitespace-nowrap">
                   {new Date(task.updatedAt).toLocaleDateString()}
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
