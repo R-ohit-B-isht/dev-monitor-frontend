@@ -33,6 +33,41 @@ export function TaskCreateDialog({ open, onOpenChange, onTaskCreated }: TaskCrea
   const [priority, setPriority] = useState<Task['priority']>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSubtasks, setHasSubtasks] = useState(false);
+  const [subtasks, setSubtasks] = useState<Array<{
+    title: string;
+    description: string;
+    status: Task['status'];
+    integration: Task['integration'];
+    priority?: Task['priority'];
+  }>>([]);
+
+  const addSubtask = () => {
+    setSubtasks([...subtasks, {
+      title: '',
+      description: '',
+      status: 'To-Do',
+      integration: integration,
+      priority: undefined
+    }]);
+  };
+
+  const updateSubtask = (
+    index: number,
+    field: 'title' | 'description' | 'status' | 'integration' | 'priority',
+    value: string | Task['status'] | Task['integration'] | Task['priority']
+  ) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[index] = {
+      ...updatedSubtasks[index],
+      [field]: value
+    };
+    setSubtasks(updatedSubtasks);
+  };
+
+  const removeSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -44,7 +79,8 @@ export function TaskCreateDialog({ open, onOpenChange, onTaskCreated }: TaskCrea
     setError(null);
 
     try {
-      const result = await api.createTask({
+      // Create parent task
+      const parentTask = await api.createTask({
         title: title.trim(),
         description: description.trim(),
         status,
@@ -52,7 +88,29 @@ export function TaskCreateDialog({ open, onOpenChange, onTaskCreated }: TaskCrea
         priority,
       });
 
-      onTaskCreated?.(result._id);
+      // If we have subtasks, create them and establish relationships
+      if (hasSubtasks && subtasks.length > 0) {
+        for (const subtask of subtasks) {
+          if (!subtask.title.trim()) continue;
+          
+          const subtaskResult = await api.createTask({
+            title: subtask.title.trim(),
+            description: subtask.description.trim(),
+            status: subtask.status,
+            integration: subtask.integration,
+            priority: subtask.priority,
+          });
+
+          // Create parent-child relationship
+          await api.createRelationship({
+            sourceTaskId: parentTask._id,
+            targetTaskId: subtaskResult._id,
+            type: 'parent-of'
+          });
+        }
+      }
+
+      onTaskCreated?.(parentTask._id);
       onOpenChange(false);
       
       // Reset form
@@ -61,6 +119,8 @@ export function TaskCreateDialog({ open, onOpenChange, onTaskCreated }: TaskCrea
       setStatus('To-Do');
       setIntegration('github');
       setPriority(undefined);
+      setHasSubtasks(false);
+      setSubtasks([]);
     } catch (err) {
       console.error('Failed to create task:', err);
       setError('Failed to create task. Please try again.');
@@ -151,6 +211,91 @@ export function TaskCreateDialog({ open, onOpenChange, onTaskCreated }: TaskCrea
                 <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2 mt-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="hasSubtasks"
+                checked={hasSubtasks}
+                onChange={(e) => {
+                  setHasSubtasks(e.target.checked);
+                  if (!e.target.checked) {
+                    setSubtasks([]);
+                  }
+                }}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="hasSubtasks" className="text-sm font-medium">
+                Add Subtasks
+              </label>
+            </div>
+
+            {hasSubtasks && (
+              <div className="space-y-4 mt-4">
+                {subtasks.map((subtask, index) => (
+                  <div key={index} className="space-y-2 p-4 border rounded-md relative">
+                    <button
+                      onClick={() => removeSubtask(index)}
+                      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    >
+                      ×
+                    </button>
+                    <Input
+                      placeholder="Subtask title"
+                      value={subtask.title}
+                      onChange={(e) => updateSubtask(index, 'title', e.target.value)}
+                      disabled={loading}
+                    />
+                    <Input
+                      placeholder="Subtask description (optional)"
+                      value={subtask.description}
+                      onChange={(e) => updateSubtask(index, 'description', e.target.value)}
+                      disabled={loading}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Select
+                        value={subtask.status}
+                        onValueChange={(value) => updateSubtask(index, 'status', value)}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="To-Do">To-Do</SelectItem>
+                          <SelectItem value="In-Progress">In Progress</SelectItem>
+                          <SelectItem value="Done">Done</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={subtask.priority || ''}
+                        onValueChange={(value) => updateSubtask(index, 'priority', value)}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select priority (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  onClick={addSubtask}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  Add Subtask
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

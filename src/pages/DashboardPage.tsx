@@ -1,14 +1,42 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { api } from '../services/api';
 import { DateRangeFilter } from '../components/DateRangeFilter';
 import { ContributionChart } from '../components/ContributionChart';
 
 export function DashboardPage() {
-  const [metrics, setMetrics] = useState<any>(null);
-  const [contributions, setContributions] = useState<any>(null);
+  interface MonitoringMetrics {
+    focusTimePercentage: number;
+    focusTimeSeconds: number;
+    productivityScore: number;
+    totalActivities: number;
+    aiMetrics: {
+      linesOfCodeModified: number;
+      filesChanged: number;
+      testCoverage: number;
+      responseTime: number;
+    };
+  }
+
+  interface ContributionData {
+    months: {
+      year: number;
+      month: number;
+      name: string;
+      days: number;
+      contributions: Array<{
+        date: string;
+        count: number;
+        intensity: number;
+      }>;
+    }[];
+    totalContributions: number;
+  }
+
+  const [metrics, setMetrics] = useState<MonitoringMetrics | null>(null);
+  const [contributions, setContributions] = useState<ContributionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
@@ -148,8 +176,8 @@ export function DashboardPage() {
           </Card>
         ) : contributions ? (
           <ContributionChart
-            months={contributions.months}
-            totalContributions={contributions.totalContributions}
+            months={contributions?.months || []}
+            totalContributions={contributions?.totalContributions || 0}
           />
         ) : (
           <Card className="p-6">

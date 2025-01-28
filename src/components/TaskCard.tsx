@@ -42,11 +42,11 @@ export function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
     <Card
       className={cn(
         "cursor-pointer group",
+        "border border-border/50",
+        "bg-card/50 backdrop-blur-sm",
         "hover:shadow-lg hover:translate-y-[-2px]",
         "active:translate-y-[1px]",
         "transition-all duration-300 ease-in-out",
-        "border border-border/50",
-        "bg-card/50 backdrop-blur-sm",
         getPriorityStyle()
       )}
       onClick={onClick}

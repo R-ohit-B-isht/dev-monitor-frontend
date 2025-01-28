@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
 import { DateRangeFilter } from '../components/DateRangeFilter';
-import { ActivityFeed } from '../components/ActivityFeed';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { api, OrganizationMetrics } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -16,11 +14,7 @@ export function OrganizationDashboard() {
   const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
   const [endDate, setEndDate] = useState(new Date());
 
-  useEffect(() => {
-    fetchMetrics();
-  }, [startDate, endDate]);
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = React.useCallback(async () => {
     try {
       setLoading(true);
       const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -33,7 +27,11 @@ export function OrganizationDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
 
   if (loading) {
     return <div>Loading organization metrics...</div>;

@@ -12,8 +12,11 @@ interface BoardViewProps {
   onDelete?: (taskId: string) => void;
 }
 
-export function BoardView({ tasks, onTaskClick, onDelete }: BoardViewProps) {
+export function BoardView({ tasks, onTaskClick }: BoardViewProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  console.log('BoardView received tasks:', tasks); // Debug log
+
   const filterTasksByStatus = (status: Task['status']) => {
     return tasks.filter(task => task.status === status);
   };

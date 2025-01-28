@@ -70,7 +70,7 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
 
       if (fileFormat === 'csv') {
         // Handle CSV download
-        const blob = new Blob([response], { type: 'text/csv' });
+        const blob = new Blob([JSON.stringify(response)], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -142,7 +142,7 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
           {/* Report Type */}
           <div className="grid gap-2">
             <label className="text-sm font-medium">Report Type</label>
-            <Select value={reportType} onValueChange={(value: any) => setReportType(value)}>
+            <Select value={reportType} onValueChange={(value: 'daily' | 'weekly' | 'monthly') => setReportType(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select report type" />
               </SelectTrigger>
@@ -157,7 +157,7 @@ export const ReportPanel: React.FC<ReportPanelProps> = ({ engineerId = 'current'
           {/* File Format */}
           <div className="grid gap-2">
             <label className="text-sm font-medium">File Format</label>
-            <Select value={fileFormat} onValueChange={(value: any) => setFileFormat(value)}>
+            <Select value={fileFormat} onValueChange={(value: 'json' | 'csv') => setFileFormat(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select file format" />
               </SelectTrigger>

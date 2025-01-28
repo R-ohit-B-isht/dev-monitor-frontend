@@ -88,7 +88,7 @@ const CollapsibleTrigger = React.forwardRef<HTMLButtonElement, CollapsibleTrigge
 
     return React.isValidElement(Child)
       ? React.cloneElement(Child, childProps)
-      : React.createElement(Child as any, { ...childProps }, children)
+      : React.createElement(Child as React.ElementType, { ...childProps }, children)
   }
 )
 CollapsibleTrigger.displayName = "CollapsibleTrigger"

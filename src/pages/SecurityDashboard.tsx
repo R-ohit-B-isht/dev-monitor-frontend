@@ -57,8 +57,9 @@ export function SecurityDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [repository, setRepository] = useState<string>('R-ohit-B-isht/cal.com');
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const [alertsData, statsData] = await Promise.all([
         getSecurityAlerts({ repository }),
@@ -72,15 +73,13 @@ export function SecurityDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [repository]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData, repository]);
 
-  const [repository, setRepository] = useState<string>('R-ohit-B-isht/cal.com');
-  
-  const handleSync = async () => {
+  const handleSync = React.useCallback(async () => {
     if (!repository) {
       setError('Please select a repository');
       return;
@@ -96,7 +95,7 @@ export function SecurityDashboard() {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [repository, fetchData, setError, setSyncing]);
 
   if (loading) {
     return <div>Loading security data...</div>;

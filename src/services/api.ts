@@ -190,7 +190,7 @@ export const api = {
   recordValueStreamEvent: async (engineerId: string, data: {
     taskId: string;
     eventType: 'code_started' | 'code_completed' | 'review_started' | 'review_completed' | 'merged' | 'deployed';
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     sessionId?: string;
   }): Promise<{ eventId: string }> => {
     const response = await axios.post(`${API_BASE_URL}/value-stream/events/${engineerId}`, data);
@@ -297,7 +297,7 @@ export const api = {
     format: 'json' | 'csv';
     engineerId: string;
     includeAchievements: boolean;
-  }): Promise<any> => {
+  }): Promise<Record<string, unknown>> => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/report`, { params });
     return response.data;
   },
@@ -387,6 +387,10 @@ export const api = {
   },
   updateTaskStatus: async (taskId: string, status: Task['status']): Promise<void> => {
     await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { status });
+  },
+
+  updateTask: async (taskId: string, updates: Partial<Task>): Promise<void> => {
+    await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, updates);
   },
 
   deleteTask: async (taskId: string): Promise<void> => {

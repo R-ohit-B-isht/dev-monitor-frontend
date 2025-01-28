@@ -12,6 +12,7 @@ import { RelationshipGraph } from '../components/views/RelationshipGraph';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { Task } from '../types/Task';
 import { api, Relationship } from '../services/api';
+import { TaskDetailDialog } from '../components/TaskDetailDialog';
 
 
 export function TasksPage() {
@@ -26,15 +27,13 @@ export function TasksPage() {
 
   console.log('Current tasks:', tasks); // Debug log
 
-  const handleTaskClick = (task: Task) => {
+  const handleTaskClick = React.useCallback((task: Task) => {
     navigate(`/tasks/${task._id}`);
-  };
+  }, [navigate]);
 
 
 
-
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -56,19 +55,17 @@ export function TasksPage() {
         console.log('Task statuses:', tasksData.map(t => ({ id: t._id, status: t.status })));
         console.log('API Response - Relationships:', relationshipsData);
 
-        if (Array.isArray(tasksData)) {
+        if (Array.isArray(tasksData) && Array.isArray(relationshipsData)) {
           console.log('Setting tasks state with', tasksData.length, 'tasks');
           setTasks(tasksData);
-        } else {
-          console.error('Tasks data is not an array:', tasksData);
-          setError('Invalid tasks data format');
-          setTasks([]);
-        }
-
-        if (Array.isArray(relationshipsData)) {
           setRelationships(relationshipsData);
         } else {
-          console.error('Relationships data is not an array:', relationshipsData);
+          console.error('Invalid data format:', { 
+            tasksValid: Array.isArray(tasksData), 
+            relationshipsValid: Array.isArray(relationshipsData) 
+          });
+          setError('Invalid data format');
+          setTasks([]);
           setRelationships([]);
         }
       } catch (err) {
@@ -83,7 +80,7 @@ export function TasksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, setError, setLoading, setRelationships, setTasks]);
   useEffect(() => {
     const handleTaskCreated = () => {
       fetchData();
@@ -93,7 +90,7 @@ export function TasksPage() {
     fetchData();
 
     return () => window.removeEventListener('taskCreated', handleTaskCreated);
-  }, [filters]);
+  }, [filters, fetchData]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -160,6 +157,7 @@ export function TasksPage() {
           )}
         </>
       )}
+
 
 
     </div>

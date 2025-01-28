@@ -12,6 +12,9 @@ import { ArrowLeft, ArrowRight, Clock, Github, Trello, LineChart, XCircle } from
 import { Relationships } from '../components/views/Relationships';
 import { cn } from '../lib/utils';
 import { statusStyles } from '../components/TaskCard';
+import { TaskCard } from '../components/TaskCard';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 
 const integrationIcons = {
   github: <Github className="h-4 w-4" />,
@@ -26,7 +29,6 @@ export function TaskDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
-
   // Fetch all tasks for relationships
   useEffect(() => {
     const fetchAllTasks = async () => {
@@ -41,12 +43,10 @@ export function TaskDetailsPage() {
     fetchAllTasks();
   }, []);
 
-
   useEffect(() => {
     const fetchTask = async () => {
       try {
         const response = await api.getTask(id!);
-        setTask(response);
       } catch (error: unknown) {
         console.error('Error loading task details:', error);
         setError('Failed to load task details');
@@ -55,7 +55,7 @@ export function TaskDetailsPage() {
       }
     };
 
-    fetchTask();
+    fetchTaskAndSubtasks();
   }, [id]);
 
   if (loading) return (
@@ -264,6 +264,8 @@ export function TaskDetailsPage() {
             {/* Optional links section removed until Task interface is updated */}
             <div className="grid sm:grid-cols-2 gap-4"></div>
           </div>
+
+
 
           {/* Task Relationships */}
           {task && (
