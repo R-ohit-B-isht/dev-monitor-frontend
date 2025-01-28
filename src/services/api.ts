@@ -348,9 +348,11 @@ export const api = {
     }
   },
 
-  getTask: async (taskId: string): Promise<Task> => {
+  getTask: async (taskId: string, includeSubtasks: boolean = false): Promise<Task> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`);
+      const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`, {
+        params: { includeSubtasks: includeSubtasks ? 'true' : 'false' }
+      });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch task:', error);
@@ -432,7 +434,7 @@ export interface Relationship {
   _id?: string;
   sourceTaskId: string;
   targetTaskId: string;
-  type: 'blocks' | 'blocked-by' | 'relates-to' | 'duplicates' | 'parent-of' | 'child-of';
+  type: 'blocks' | 'blocked-by' | 'relates-to' | 'duplicates' | 'parent-child';
   createdAt?: string;
   updatedAt?: string;
 }

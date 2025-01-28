@@ -18,7 +18,8 @@ export function BoardView({ tasks, onTaskClick }: BoardViewProps) {
   console.log('BoardView received tasks:', tasks); // Debug log
 
   const filterTasksByStatus = (status: Task['status']) => {
-    return tasks.filter(task => task.status === status);
+    // Return all tasks - TaskColumn will handle filtering and grouping
+    return tasks;
   };
 
   return (

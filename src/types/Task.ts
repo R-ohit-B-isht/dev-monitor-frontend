@@ -11,4 +11,7 @@ export interface Task {
   sourceId?: string;
   issueKey?: string;
   priority?: 'high' | 'medium' | 'low';
+  // Subtask relationship fields
+  parentId?: string;         // Reference to parent task if this is a subtask
+  childIds?: string[];       // Array of subtask IDs if this is a parent task
 }

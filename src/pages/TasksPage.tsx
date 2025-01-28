@@ -38,18 +38,20 @@ export function TasksPage() {
     setError(null);
     try {
       console.log('Fetching data with filters:', filters);
-      const filterParams: Record<string, string> = {};
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-          filterParams[key] = value.toString();
-        }
-      });
+      const filterParams: Record<string, string> = {
+        includeSubtasks: 'true', // Always include subtasks in the response
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => 
+            value !== undefined && value !== ''
+          ).map(([key, value]) => [key, value.toString()])
+        )
+      };
       console.log('Final filter params:', filterParams);
 
       try {
         const [tasksData, relationshipsData] = await Promise.all([
           api.getTasks(filterParams),
-          api.getRelationships()
+          api.getRelationships({ type: 'parent-child' })
         ]);
         console.log('API Response - Tasks:', tasksData);
         console.log('Task statuses:', tasksData.map(t => ({ id: t._id, status: t.status })));
@@ -86,10 +88,18 @@ export function TasksPage() {
       fetchData();
     };
 
+    const handleTaskUpdated = () => {
+      fetchData();
+    };
+
     window.addEventListener('taskCreated', handleTaskCreated);
+    window.addEventListener('taskUpdated', handleTaskUpdated);
     fetchData();
 
-    return () => window.removeEventListener('taskCreated', handleTaskCreated);
+    return () => {
+      window.removeEventListener('taskCreated', handleTaskCreated);
+      window.removeEventListener('taskUpdated', handleTaskUpdated);
+    };
   }, [filters, fetchData]);
 
   return (
