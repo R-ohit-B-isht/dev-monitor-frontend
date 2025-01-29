@@ -9,8 +9,7 @@ import {
 } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
-import { Button } from '../components/ui/button';
-import { Clock, Award, Activity, Brain, FileDown } from 'lucide-react';
+import { Clock, Award, Activity, Brain } from 'lucide-react';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { api, MonitoringMetrics, Achievement } from '../services/api';
 // Removed meeting card import for AI agent
@@ -21,7 +20,7 @@ export function MonitoringDashboard() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentSessionId, setCurrentSessionId] = useState<string>('');
+  // Removed unused state variables
 
   const fetchData = async () => {
     try {
@@ -67,7 +66,7 @@ export function MonitoringDashboard() {
       />
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold">Devin's Activity Monitor</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Devin&apos;s Activity Monitor</h1>
         <ReportPanel engineerId="current" />
       </div>
 

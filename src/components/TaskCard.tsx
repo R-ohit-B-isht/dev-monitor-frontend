@@ -47,6 +47,7 @@ export function TaskCard({ task, onClick, onDelete }: TaskCardProps) {
         "transition-all duration-300 ease-in-out",
         "border border-border/50",
         "bg-card/50 backdrop-blur-sm",
+        task.parentId && "border-l-4 border-l-primary",
         getPriorityStyle()
       )}
       onClick={onClick}

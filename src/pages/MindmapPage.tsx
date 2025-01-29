@@ -59,6 +59,8 @@ export function MindmapPage() {
 
         // Convert mindmap nodes to task format for RelationshipGraph
         const formattedNodes: MindmapNode[] = nodesData.map((node: WebSocketMindmapNode) => ({
+          ...node,
+          subtasks: [],
           _id: node._id,
           title: node.label,
           label: node.label,
@@ -109,6 +111,8 @@ export function MindmapPage() {
     
     websocketService.on('mindmap_state', (data) => {
       const formattedNodes: MindmapNode[] = data.nodes.map((node: WebSocketMindmapNode) => ({
+        ...node,
+        subtasks: [],
         _id: node._id,
         title: node.label,
         label: node.label,
@@ -136,6 +140,7 @@ export function MindmapPage() {
     
     websocketService.on('node_created', (node) => {
       const formattedNode: MindmapNode = {
+        subtasks: [],
         _id: node._id,
         title: node.label,
         label: node.label,

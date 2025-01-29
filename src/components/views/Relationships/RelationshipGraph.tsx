@@ -6,17 +6,13 @@ import ReactFlow, {
   Background,
   useNodesState,
   useEdgesState,
-  Panel,
   useReactFlow,
-  ConnectionMode,
   ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Task } from '../../../types/Task';
 import { Relationship } from '../../../services/api';
 import { ErrorBoundary } from '../../ErrorBoundry';
-import { Button } from '../../ui/button';
-import { ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 interface RelationshipGraphProps {
   task: Task;
@@ -30,35 +26,12 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
     const nodes: Node[] = [];
     const addedTaskIds = new Set<string>();
 
-    // Add central task node
-    nodes.push({
-      id: task._id,
-      data: { label: task.title, status: task.status },
-      position: { x: 0, y: 0 },
-      type: 'default',
-      style: {
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: '8px',
-        padding: '10px',
-      },
-    });
-    addedTaskIds.add(task._id);
-
-    // Add related task nodes in a circular layout
-    relationships.forEach((rel, index) => {
-      const relatedTask = allTasks.find(t => t._id === rel.targetTaskId);
-      if (!relatedTask || addedTaskIds.has(rel.targetTaskId)) return;
-
-      const angle = (2 * Math.PI * index) / relationships.length;
-      const radius = 200;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-
+    if (task && task._id && task.title && task.status) {
+      // Add central task node
       nodes.push({
-        id: relatedTask._id,
-        data: { label: relatedTask.title, status: relatedTask.status },
-        position: { x, y },
+        id: task._id,
+        data: { label: task.title, status: task.status },
+        position: { x: 0, y: 0 },
         type: 'default',
         style: {
           background: '#fff',
@@ -67,17 +40,42 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
           padding: '10px',
         },
       });
-      addedTaskIds.add(relatedTask._id);
-    });
+      addedTaskIds.add(task._id);
+
+      // Add related task nodes in a circular layout
+      relationships.forEach((rel, index) => {
+        const relatedTask = allTasks.find(t => t._id === rel.targetTaskId);
+        if (!relatedTask || addedTaskIds.has(rel.targetTaskId)) return;
+
+        const angle = (2 * Math.PI * index) / relationships.length;
+        const radius = 200;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        nodes.push({
+          id: relatedTask._id,
+          data: { label: relatedTask.title, status: relatedTask.status },
+          position: { x, y },
+          type: 'default',
+          style: {
+            background: '#fff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            padding: '10px',
+          },
+        });
+        addedTaskIds.add(relatedTask._id);
+      });
+    }
 
     return nodes;
   }, [task, relationships, allTasks]);
 
   const getInitialEdges = useCallback(() => {
     return relationships
-      .filter(rel => rel._id && rel.sourceTaskId && rel.targetTaskId) // Filter out invalid relationships
+      .filter(rel => rel._id && rel.sourceTaskId && rel.targetTaskId)
       .map((rel): Edge => ({
-        id: rel._id!, // Safe to use ! after filter
+        id: rel._id!,
         source: rel.sourceTaskId,
         target: rel.targetTaskId,
         label: rel.type,
@@ -87,19 +85,16 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
       }));
   }, [relationships]);
 
-  const memoizedNodes = useCallback(getInitialNodes, [task, relationships, allTasks]);
-  const memoizedEdges = useCallback(getInitialEdges, [relationships]);
+  const memoizedNodes = useMemo(() => getInitialNodes(), [getInitialNodes]);
+  const memoizedEdges = useMemo(() => getInitialEdges(), [getInitialEdges]);
 
-  const initialNodes = useCallback(() => memoizedNodes(), [memoizedNodes, getInitialNodes]);
-  const initialEdges = useCallback(() => memoizedEdges(), [memoizedEdges, getInitialEdges]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes());
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges());
+  const [nodes, setNodes, onNodesChange] = useNodesState(memoizedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(memoizedEdges);
 
   useEffect(() => {
-    setNodes(initialNodes());
-    setEdges(initialEdges());
-  }, [initialNodes, initialEdges, setNodes, setEdges, relationships, allTasks]);
+    setNodes(memoizedNodes);
+    setEdges(memoizedEdges);
+  }, [memoizedNodes, memoizedEdges, setNodes, setEdges]);
 
   const nodeTypes = useMemo(() => ({
     default: ({ data }: { data: { label: string; status: string } }) => {
@@ -130,7 +125,13 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
   // Error handling is now managed by ErrorBoundary
 
   const Flow = () => {
-    const { fitView, zoomIn, zoomOut } = useReactFlow();
+    const { fitView } = useReactFlow();
+    
+    // Call fitView on mount
+    useEffect(() => {
+      fitView();
+    }, [fitView]);
+    
     return (
       <ReactFlow
         nodes={nodes}
@@ -138,7 +139,6 @@ export function RelationshipGraph({ task, relationships, allTasks }: Relationshi
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
-        fitView
         attributionPosition="bottom-right"
       >
         <Background />

@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
-import { Checkbox } from './ui/checkbox';
+// Removed unused Checkbox import
 
 export interface Filters {
   status?: string;

@@ -190,7 +190,7 @@ export const api = {
   recordValueStreamEvent: async (engineerId: string, data: {
     taskId: string;
     eventType: 'code_started' | 'code_completed' | 'review_started' | 'review_completed' | 'merged' | 'deployed';
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     sessionId?: string;
   }): Promise<{ eventId: string }> => {
     const response = await axios.post(`${API_BASE_URL}/value-stream/events/${engineerId}`, data);
@@ -297,7 +297,7 @@ export const api = {
     format: 'json' | 'csv';
     engineerId: string;
     includeAchievements: boolean;
-  }): Promise<any> => {
+  }): Promise<Record<string, unknown>> => {
     const response = await axios.get(`${API_BASE_URL}/monitoring/report`, { params });
     return response.data;
   },
@@ -348,9 +348,11 @@ export const api = {
     }
   },
 
-  getTask: async (taskId: string): Promise<Task> => {
+  getTask: async (taskId: string, includeSubtasks: boolean = false): Promise<Task> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`);
+      const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`, {
+        params: { includeSubtasks: includeSubtasks ? 'true' : 'false' }
+      });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch task:', error);
@@ -387,6 +389,10 @@ export const api = {
   },
   updateTaskStatus: async (taskId: string, status: Task['status']): Promise<void> => {
     await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, { status });
+  },
+
+  updateTask: async (taskId: string, updates: Partial<Task>): Promise<void> => {
+    await axios.patch(`${API_BASE_URL}/tasks/${taskId}`, updates);
   },
 
   deleteTask: async (taskId: string): Promise<void> => {
@@ -428,7 +434,7 @@ export interface Relationship {
   _id?: string;
   sourceTaskId: string;
   targetTaskId: string;
-  type: 'blocks' | 'blocked-by' | 'relates-to' | 'duplicates' | 'parent-of' | 'child-of';
+  type: 'blocks' | 'blocked-by' | 'relates-to' | 'duplicates' | 'parent-child';
   createdAt?: string;
   updatedAt?: string;
 }

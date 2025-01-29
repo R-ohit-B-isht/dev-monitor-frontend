@@ -7,12 +7,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Task } from '../types/Task';
 import { api } from '../services/api';
-import { Github, Trello, LineChart, Clock, Loader2 } from 'lucide-react';
+import { Github, Trello, LineChart, Clock, Loader2, Plus, Trash2, Edit2, ExternalLink } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { statusStyles } from './TaskCard';
 
@@ -26,13 +27,13 @@ interface TaskDetailDialogProps {
   taskId: string | null;
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToTask?: (taskId: string) => void;
 }
 
-export function TaskDetailDialog({ taskId, isOpen, onClose }: TaskDetailDialogProps) {
+export function TaskDetailDialog({ taskId, isOpen, onClose, onNavigateToTask }: TaskDetailDialogProps) {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     if (!taskId || !isOpen) return;
     
@@ -55,29 +56,27 @@ export function TaskDetailDialog({ taskId, isOpen, onClose }: TaskDetailDialogPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-label="Task details dialog">
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-8" aria-label="Loading task details">
             <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
           </div>
         ) : error ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8" role="alert" aria-live="polite">
             <p className="text-red-500">{error}</p>
           </div>
         ) : task ? (
           <>
             <DialogHeader>
               <div className="flex items-center justify-between">
-                <DialogTitle>{task.title}</DialogTitle>
-                <div className="flex items-center space-x-2">
+                <DialogTitle>Task Details: {task.title}</DialogTitle>
+                <div className="flex items-center space-x-2" aria-label={`Integration: ${task.integration}`}>
                   {integrationIcons[task.integration]}
                 </div>
               </div>
-              {task.description && (
-                <DialogDescription className="mt-2">
-                  {task.description}
-                </DialogDescription>
-              )}
+              <DialogDescription className="mt-2">
+                {task.description || 'No description provided'}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
